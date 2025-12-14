@@ -1,0 +1,42 @@
+name: GamerPower Bot
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  check-games:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to push changes to sent_games.json
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_IDS: ${{ secrets.CHANNEL_IDS }}
+          SINGLE_RUN: "true"
+        run: python bot.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'GamerPower Bot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add sent_games.json
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update sent games list [skip ci]" && git push)
