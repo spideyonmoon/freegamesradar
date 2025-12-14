@@ -32,6 +32,84 @@ def load_config():
         
     return config
 
+def load_sent_games(filepath):
+    if not os.path.exists(filepath):
+        return []
+    with open(filepath, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+def save_sent_games(filepath, sent_games):
+    with open(filepath, 'w') as f:
+        json.dump(sent_games, f)
+
+def fetch_giveaways():
+    try:
+        # Filter by type=game directly in the API call
+        response = requests.get(API_URL, params={"type": "game"})
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching giveaways: {e}")
+        return []
+
+def send_telegram_message(bot_token, channel_id, game):
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    
+    # Construct message
+    title = game.get('title', 'Unknown Game')
+    platform = game.get('platforms', 'Unknown Platform')
+    worth = game.get('worth', 'N/A')
+    description = game.get('description', 'No description.')
+    open_giveaway_url = game.get('open_giveaway')
+    image_url = game.get('image')
+
+    text = (
+        f"<b>{title}</b>\n\n"
+        f"🎮 <b>Platform:</b> {platform}\n"
+        f"💰 <b>Worth:</b> {worth}\n"
+        f"🏪 <b>Source:</b> {game.get('end_date', 'GamerPower')}\n\n"
+        f"{description}\n"
+    )
+
+    if image_url:
+        url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
+        data = {
+            "chat_id": channel_id,
+            "photo": image_url,
+            "caption": text,
+            "parse_mode": "HTML",
+            "reply_markup": json.dumps({
+                "inline_keyboard": [[
+                    {"text": "🔥 Claim Now", "url": open_giveaway_url}
+                ]]
+            })
+        }
+    else:
+        data = {
+            "chat_id": channel_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "reply_markup": json.dumps({
+                "inline_keyboard": [[
+                    {"text": "🔥 Claim Now", "url": open_giveaway_url}
+                ]]
+            })
+        }
+    
+    try:
+        response = requests.post(url, data=data)
+        response.raise_for_status()
+        print(f"Sent {title} to {channel_id}")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to send message to {channel_id}: {e}")
+        if response.content:
+            print(f"Response: {response.content}")
+        return False
+
 def main():
     config = load_config()
     bot_token = config.get("bot_token")
