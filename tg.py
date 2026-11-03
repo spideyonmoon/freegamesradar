@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import html
 import os
+import random
 import re
 import time
 
@@ -67,9 +68,49 @@ def _rating_lines(r: dict) -> list[str]:
     return lines
 
 
-def _verdict_html(v: str, sep: str) -> str:
+ENDED_LINES = {
+    "high": [
+        "Was a {n}/10. Shame if you missed it.",
+        "That was a {n}/10. Hope you grabbed it.",
+        "{n}/10, and it's gone now. Keep an eye out next time.",
+        "Was a solid {n}/10. If you got it, nice one.",
+        "A {n}/10 that's now over. Ouch if you slept on it.",
+    ],
+    "mid": [
+        "Was a {n}/10. Decent, but nothing to lose sleep over.",
+        "That one was a {n}/10. No big loss if you missed it.",
+        "{n}/10, now over. Fine if you skipped it.",
+        "Was an okay {n}/10. Plenty more where that came from.",
+    ],
+    "low": [
+        "Was {n}/10. It's alright if you didn't bother.",
+        "Only a {n}/10. You didn't miss much.",
+        "{n}/10, and it's gone. Probably for the best.",
+        "Was a {n}/10. Skipping it was a fine call.",
+    ],
+    "none": [
+        "This one's over now.",
+        "Giveaway's done. Catch the next one.",
+    ],
+}
+
+
+def ended_line(verdict: str | None) -> str | None:
+    """Past-tense replacement for "Worth: N/10 Claim it", picked at random by score."""
+    if not verdict:
+        return None
+    m = re.search(r"(\d+(?:\.\d+)?)\s*/\s*10", verdict.partition("\n")[0])
+    if not m:
+        return random.choice(ENDED_LINES["none"])
+    n = float(m.group(1))
+    tier = "high" if n >= 8 else "mid" if n >= 5 else "low"
+    return random.choice(ENDED_LINES[tier]).format(n=m.group(1))
+
+
+def _verdict_html(v: str, sep: str, head_override: str | None = None) -> str:
     """First line ("Worth: 8/10 Claim it") in bold, the reasoning below."""
     head, _, rest = v.partition("\n")
+    head = head_override or head
     return f"<b>{esc(head)}</b>" + (sep + esc(rest).replace("\n", sep) if rest else "")
 
 
@@ -102,7 +143,8 @@ def render_rich(p: dict, expired: bool = False, with_image: bool = True) -> str:
                      + "<br>".join(_rating_lines(p["ratings"])) + "</p></details>")
     if p.get("verdict"):
         parts.append("<details><summary>🤖 AI verdict</summary><p>"
-                     + _verdict_html(p["verdict"], "<br>") + "</p></details>")
+                     + _verdict_html(p["verdict"], "<br>", p.get("ended_line") if expired else None)
+                     + "</p></details>")
     return "\n".join(parts)
 
 
@@ -115,7 +157,8 @@ def render_classic(p: dict, expired: bool = False, limit: int = CAPTION_LIMIT) -
         if p.get("ratings"):
             text += "\n\n<blockquote expandable>⭐ <b>Ratings</b>\n" + "\n".join(_rating_lines(p["ratings"])) + "</blockquote>"
         if verdict:
-            text += "\n<blockquote expandable>🤖 <b>AI verdict</b>\n" + _verdict_html(verdict, "\n") + "</blockquote>"
+            text += ("\n<blockquote expandable>🤖 <b>AI verdict</b>\n"
+                     + _verdict_html(verdict, "\n", p.get("ended_line") if expired else None) + "</blockquote>")
         return text
 
     desc, verdict = p["description"], p.get("verdict")

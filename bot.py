@@ -87,6 +87,9 @@ def mark_ended(active: list[dict], data: dict) -> bool:
         if gamerpower.is_expired(gid) is not True:
             continue
         print(f"Ended: {entry['post']['title']}")
+        # pick once per game so every channel shows the same line
+        if "ended_line" not in entry["post"]:
+            entry["post"]["ended_line"] = tg.ended_line(entry["post"].get("verdict"))
         remaining = []
         for post in entry["posts"]:
             if not tg.mark_expired(post["chat"], post["message_id"], post["mode"], entry["post"]):
