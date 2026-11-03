@@ -1,160 +1,130 @@
-import requests
+"""Free Games Radar: post new GamerPower game giveaways to Telegram channels.
+
+Each run (hourly on GitHub Actions):
+  1. posts new giveaways (with Steam ratings + AI verdict dropdowns) to every channel,
+     retrying channels that failed last time without double-posting the others;
+  2. edits earlier posts whose giveaway has ended so they show "ended".
+"""
+from __future__ import annotations
+
 import json
 import os
 import sys
+import time
 
-# Constants
-API_URL = "https://www.gamerpower.com/api/giveaways"
+import ai
+import gamerpower
+import ratings
+import state
+import tg
+
 CONFIG_FILE = "config.json"
-SENT_GAMES_FILE = "sent_games.json"
+MAX_ATTEMPTS = 5      # runs to keep retrying a channel that rejects a post
+SEND_DELAY = 3        # seconds between posts (Telegram allows ~20/min per channel)
 
-def load_config():
-    # Priority: Env Vars > Config File
-    config = {}
-    
+
+def load_config() -> dict:
+    """Priority: env vars > config.json."""
+    config: dict = {}
     if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as f:
-            try:
+        try:
+            with open(CONFIG_FILE, encoding="utf-8") as f:
                 config = json.load(f)
-            except:
-                pass
-    
-    # Override with Env Vars
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"Warning: could not read {CONFIG_FILE}: {e}")
     if os.environ.get("BOT_TOKEN"):
-        config["bot_token"] = os.environ.get("BOT_TOKEN")
-    
+        config["bot_token"] = os.environ["BOT_TOKEN"]
     if os.environ.get("CHANNEL_IDS"):
-        ids = os.environ.get("CHANNEL_IDS").split(",")
-        config["channel_ids"] = [x.strip() for x in ids if x.strip()]
-        
+        config["channel_ids"] = [x.strip() for x in os.environ["CHANNEL_IDS"].split(",") if x.strip()]
     return config
 
-def load_sent_games(filepath):
-    if not os.path.exists(filepath):
-        return []
-    with open(filepath, 'r') as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return []
 
-def save_sent_games(filepath, sent_games):
-    with open(filepath, 'w') as f:
-        json.dump(sent_games, f)
+def post_new(games: list[dict], data: dict, channels: list[str]) -> bool:
+    changed = False
+    # oldest first, so the newest ends up at the bottom of the channel
+    for game in reversed(games):
+        gid = str(game.get("id") or "")
+        if not gid or game.get("type") != "Game":
+            continue
+        entry = data["games"].get(gid)
+        if entry is None:
+            print(f"New: {game.get('title')}")
+            r = ratings.lookup(game.get("title", ""))
+            v = ai.verdict(game, r)
+            print(f"  ratings: {'yes' if r else 'none'}, AI verdict: {'yes' if v else 'none'}")
+            entry = {"posts": [], "pending": list(channels), "attempts": 0,
+                     "expired": False, "post": tg.build_post(game, r, v)}
+            data["games"][gid] = entry
+        if not entry.get("pending"):
+            continue
 
-def fetch_giveaways():
-    try:
-        # Filter by type=game directly in the API call
-        response = requests.get(API_URL, params={"type": "game"})
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        print(f"Error fetching giveaways: {e}")
-        return []
+        for chat in list(entry["pending"]):
+            sent = tg.send(chat, entry["post"])
+            if sent:
+                mode, message_id = sent
+                entry["posts"].append({"chat": chat, "message_id": message_id, "mode": mode})
+                entry["pending"].remove(chat)
+                print(f"  sent to {chat} ({mode})")
+            time.sleep(SEND_DELAY)
 
-def send_telegram_message(bot_token, channel_id, game):
-    url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
-    
-    # Construct message data
-    title = game.get('title', 'Unknown Game')
-    platform = game.get('platforms', 'Unknown Platform')
-    worth = game.get('worth', 'N/A')
-    description = game.get('description', 'No description.')
-    open_giveaway_url = game.get('open_giveaway')
-    image_url = game.get('image')
-    end_date = game.get('end_date')
+        entry["attempts"] = entry.get("attempts", 0) + 1
+        if entry["pending"] and entry["attempts"] >= MAX_ATTEMPTS:
+            print(f"  giving up on {entry['pending']} after {MAX_ATTEMPTS} runs")
+            entry["pending"] = []
+        changed = True
+        state.save(data)  # save as we go, so a crash can't cause re-posts
+    return changed
 
-    # 
-    text = (
-        f"<b>{title}</b>\n\n"
-        f"🎮 <b>Platform:</b> {platform}\n"
-        f"💰 <b>Worth:</b> {worth}\n"
-    )
 
-    # Fixed: Label is now 'Ends' instead of 'Source', and checks if date exists
-    if end_date and end_date != "N/A":
-        text += f"⏳ <b>Ends:</b> {end_date}\n"
+def mark_ended(active: list[dict], data: dict) -> bool:
+    active_ids = {str(g.get("id")) for g in active}
+    changed = False
+    for gid, entry in data["games"].items():
+        if entry.get("expired") or not entry.get("posts") or not entry.get("post"):
+            continue
+        if gid in active_ids:
+            continue
+        if gamerpower.is_expired(gid) is not True:
+            continue
+        print(f"Ended: {entry['post']['title']}")
+        remaining = []
+        for post in entry["posts"]:
+            if not tg.mark_expired(post["chat"], post["message_id"], post["mode"], entry["post"]):
+                remaining.append(post)
+            time.sleep(1)
+        entry["posts"] = remaining
+        if not remaining:
+            entry["expired"] = True
+            entry.pop("post", None)  # no longer needed, keeps the file small
+        changed = True
+    return changed
 
-    # Truncate description slightly to keep it clean
-    if len(description) > 300:
-        description = description[:297] + "..."
-    
-    text += f"\n{description}"
 
-    # Clean Button (No Fire Emoji)
-    reply_markup = {
-        "inline_keyboard": [[
-            {"text": "Claim Now ↗️", "url": open_giveaway_url}
-        ]]
-    }
-
-    # Prepare Payload
-    data = {
-        "chat_id": channel_id,
-        "caption": text,
-        "parse_mode": "HTML",
-        "reply_markup": json.dumps(reply_markup)
-    }
-
-    if image_url:
-        data["photo"] = image_url
-    else:
-        # Fallback to text message if no image
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        data["text"] = text
-        del data["caption"]
-        del data["photo"]
-    
-    try:
-        response = requests.post(url, data=data)
-        response.raise_for_status()
-        return True
-    except requests.RequestException as e:
-        print(f"Failed to send message to {channel_id}: {e}")
-        return False
-
-def main():
+def main() -> None:
     config = load_config()
-    bot_token = config.get("bot_token")
-    channel_ids = config.get("channel_ids")
-    
-    if not bot_token or not channel_ids:
+    token, channels = config.get("bot_token"), config.get("channel_ids")
+    if not token or not channels:
         print("Error: bot_token or channel_ids missing in config or env vars.")
         sys.exit(1)
+    os.environ["BOT_TOKEN"] = token
 
-    print("Bot started (Single Run Mode).")
+    data = state.load()
+    games = gamerpower.fetch_active()
+    if games is None:
+        print("GamerPower unavailable, nothing to do this run.")
+        return
 
-    sent_games = load_sent_games(SENT_GAMES_FILE)
-    sent_ids = set(sent_games) 
+    changed = post_new(games, data, channels)
+    # Only judge expiry from a non-empty list, so an API hiccup can't mark everything ended
+    if games:
+        changed = mark_ended(games, data) or changed
 
-    games = fetch_giveaways()
-    
-    new_games_found = False
-
-    # Reversed: Process oldest games first so they appear at the top of the chat
-    for game in reversed(games):
-        game_id = game.get('id')
-        
-        if game_id and game_id not in sent_ids:
-            # Original simple check as requested
-            if game.get('type') != 'Game': 
-                continue
-            
-            all_sent = True
-            for channel_id in channel_ids:
-                if not send_telegram_message(bot_token, channel_id, game):
-                    all_sent = False
-            
-            if all_sent:
-                print(f"Sent: {game.get('title')}")
-                sent_ids.add(game_id)
-                new_games_found = True
-
-    if new_games_found:
-        save_sent_games(SENT_GAMES_FILE, list(sent_ids))
+    if changed:
+        state.save(data)
         print("Updated sent games list.")
     else:
         print("No new games found.")
+
 
 if __name__ == "__main__":
     main()
