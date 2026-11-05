@@ -2309,6 +2309,76 @@
     }
    ]
   },
+  "3845": {
+   "attempts": 1,
+   "expired": false,
+   "pending": [],
+   "post": {
+    "description": "Set sail with this giveaway! Download Flotsam for free via Epic Games Store! Flotsam is a cool 3d city-builder in a flooded world. Don´t miss it!",
+    "ends": "2026-11-12 23:59:00",
+    "image": "https://www.gamerpower.com/offers/1b/6aeca99004384.jpg",
+    "platforms": "PC, Epic Games Store",
+    "ratings": {
+     "genres": [
+      "Indie",
+      "Simulation",
+      "Strategy"
+     ],
+     "name": "Flotsam",
+     "released": "Dec 4, 2025",
+     "steam_label": "Mostly Positive",
+     "steam_pct": 77,
+     "steam_reviews": 2746,
+     "url": "https://store.steampowered.com/app/821250/"
+    },
+    "title": "Flotsam (Epic Games) Giveaway",
+    "url": "https://www.gamerpower.com/open/flotsam-epic-games-giveaway",
+    "verdict": null,
+    "worth": "$24.99"
+   },
+   "posts": [
+    {
+     "chat": "@freegamesradarhq",
+     "message_id": 390,
+     "mode": "rich"
+    }
+   ]
+  },
+  "3846": {
+   "attempts": 1,
+   "expired": false,
+   "pending": [],
+   "post": {
+    "description": "Chants of Sennaar (Mobile version) is free until November 12 on the Epic Games Store App for iPhone, iPad, and Android.\r\n\r\nNote: May not be available in all regions.",
+    "ends": "2026-11-12 23:59:00",
+    "image": "https://www.gamerpower.com/offers/1b/6aecabf3ea6a1.jpg",
+    "platforms": "Android, iOS",
+    "ratings": {
+     "genres": [
+      "Adventure",
+      "Indie"
+     ],
+     "metacritic": 86,
+     "name": "Chants of Sennaar",
+     "released": "Sep 5, 2023",
+     "steam_label": "Overwhelmingly Positive",
+     "steam_pct": 98,
+     "steam_reviews": 22453,
+     "url": "https://store.steampowered.com/app/1931770/"
+    },
+    "title": "Chants of Sennaar (Mobile) Giveaway",
+    "url": "https://www.gamerpower.com/open/chants-of-sennaar-mobile-giveaway",
+    "verdict": null,
+    "worth": "$7.99"
+   },
+   "posts": [
+    {
+     "chat": "@freegamesradarhq",
+     "message_id": 391,
+     "mode": "rich"
+    }
+   ]
+  },
   "392": {
    "attempts": 0,
    "expired": false,
