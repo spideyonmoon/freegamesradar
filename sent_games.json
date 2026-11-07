@@ -2288,26 +2288,9 @@
   },
   "3843": {
    "attempts": 1,
-   "expired": false,
+   "expired": true,
    "pending": [],
-   "post": {
-    "description": "Grab free Steam keys for Letter Quest: Grimm's Journey Remastered via Fanatical! Letter Quest: Grimm's Journey Remastered is a 2d turn-based RPG with clever wordplay. Don´t miss it!",
-    "ends": "2026-11-06 23:59:00",
-    "image": "https://www.gamerpower.com/offers/1b/6aeb27dbc0e38.jpg",
-    "platforms": "PC, Steam",
-    "ratings": null,
-    "title": "Letter Quest: Grimm's Journey Remastered Steam Key Giveaway",
-    "url": "https://www.gamerpower.com/open/letter-quest-grimm-s-journey-remastered-steam-key-giveaway",
-    "verdict": null,
-    "worth": "$6.99"
-   },
-   "posts": [
-    {
-     "chat": "@freegamesradarhq",
-     "message_id": 389,
-     "mode": "rich"
-    }
-   ]
+   "posts": []
   },
   "3845": {
    "attempts": 1,
