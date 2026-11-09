@@ -2364,26 +2364,9 @@
   },
   "3847": {
    "attempts": 1,
-   "expired": false,
+   "expired": true,
    "pending": [],
-   "post": {
-    "description": "Claim GMH - Good Morning Human for free via Epic Games Store! In a synthwave-inspired universe, achieve the best possible scores by avoiding obstacles in your path.",
-    "ends": "2026-11-08 23:59:00",
-    "image": "https://www.gamerpower.com/offers/1b/6aed159f0ca1d.jpg",
-    "platforms": "PC, Epic Games Store",
-    "ratings": null,
-    "title": "GMH - Good Morning Human (Epic Games) Giveaways",
-    "url": "https://www.gamerpower.com/open/gmh-good-morning-human-epic-games-giveaways",
-    "verdict": null,
-    "worth": "$9.99"
-   },
-   "posts": [
-    {
-     "chat": "@freegamesradarhq",
-     "message_id": 392,
-     "mode": "rich"
-    }
-   ]
+   "posts": []
   },
   "392": {
    "attempts": 0,
