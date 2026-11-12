@@ -2294,79 +2294,44 @@
   },
   "3845": {
    "attempts": 1,
-   "expired": false,
+   "expired": true,
    "pending": [],
-   "post": {
-    "description": "Set sail with this giveaway! Download Flotsam for free via Epic Games Store! Flotsam is a cool 3d city-builder in a flooded world. Don´t miss it!",
-    "ends": "2026-11-12 23:59:00",
-    "image": "https://www.gamerpower.com/offers/1b/6aeca99004384.jpg",
-    "platforms": "PC, Epic Games Store",
-    "ratings": {
-     "genres": [
-      "Indie",
-      "Simulation",
-      "Strategy"
-     ],
-     "name": "Flotsam",
-     "released": "Dec 4, 2025",
-     "steam_label": "Mostly Positive",
-     "steam_pct": 77,
-     "steam_reviews": 2746,
-     "url": "https://store.steampowered.com/app/821250/"
-    },
-    "title": "Flotsam (Epic Games) Giveaway",
-    "url": "https://www.gamerpower.com/open/flotsam-epic-games-giveaway",
-    "verdict": null,
-    "worth": "$24.99"
-   },
-   "posts": [
-    {
-     "chat": "@freegamesradarhq",
-     "message_id": 390,
-     "mode": "rich"
-    }
-   ]
+   "posts": []
   },
   "3846": {
    "attempts": 1,
-   "expired": false,
+   "expired": true,
    "pending": [],
-   "post": {
-    "description": "Chants of Sennaar (Mobile version) is free until November 12 on the Epic Games Store App for iPhone, iPad, and Android.\r\n\r\nNote: May not be available in all regions.",
-    "ends": "2026-11-12 23:59:00",
-    "image": "https://www.gamerpower.com/offers/1b/6aecabf3ea6a1.jpg",
-    "platforms": "Android, iOS",
-    "ratings": {
-     "genres": [
-      "Adventure",
-      "Indie"
-     ],
-     "metacritic": 86,
-     "name": "Chants of Sennaar",
-     "released": "Sep 5, 2023",
-     "steam_label": "Overwhelmingly Positive",
-     "steam_pct": 98,
-     "steam_reviews": 22453,
-     "url": "https://store.steampowered.com/app/1931770/"
-    },
-    "title": "Chants of Sennaar (Mobile) Giveaway",
-    "url": "https://www.gamerpower.com/open/chants-of-sennaar-mobile-giveaway",
-    "verdict": null,
-    "worth": "$7.99"
-   },
-   "posts": [
-    {
-     "chat": "@freegamesradarhq",
-     "message_id": 391,
-     "mode": "rich"
-    }
-   ]
+   "posts": []
   },
   "3847": {
    "attempts": 1,
    "expired": true,
    "pending": [],
    "posts": []
+  },
+  "3850": {
+   "attempts": 1,
+   "expired": false,
+   "pending": [],
+   "post": {
+    "description": "Score Knightica for free via Epic Games Store! Knightica is a 2d turn-based roguelike auto-battler where you lead an army of powerful units.\r\n\r\n*Please note this game is also available via Epic Games App (Android and iOS)!",
+    "ends": "2026-11-19 23:59:00",
+    "image": "https://www.gamerpower.com/offers/1b/6af5f33e49913.jpg",
+    "platforms": "PC, Android, iOS, Epic Games Store",
+    "ratings": null,
+    "title": "Knightica (Epic Games) Giveaway",
+    "url": "https://www.gamerpower.com/open/knightica-epic-games-giveaway",
+    "verdict": null,
+    "worth": "$14.99"
+   },
+   "posts": [
+    {
+     "chat": "@freegamesradarhq",
+     "message_id": 393,
+     "mode": "rich"
+    }
+   ]
   },
   "392": {
    "attempts": 0,
