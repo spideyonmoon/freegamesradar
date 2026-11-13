@@ -12,8 +12,17 @@ import time
 import requests
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+# Tried in order: the Flash alias often returns 503 or hangs on the free tier.
+GEMINI_MODELS = list(dict.fromkeys([GEMINI_MODEL, "gemini-flash-lite-latest"]))
+GEMINI_TIMEOUT = 60
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "")
 MAX_CHARS = 450
+
+
+def _key(name: str) -> str:
+    """API key from env, without the stray newline/space a pasted secret often has
+    (a trailing newline in OPENROUTER_API_KEY made every OpenRouter call fail)."""
+    return (os.environ.get(name) or "").strip()
 
 PROMPT = """You judge whether a free game giveaway is worth claiming, for a Telegram channel.
 You get the giveaway details and, if found, Steam/Metacritic ratings as JSON.
@@ -34,12 +43,12 @@ class AIError(Exception):
     pass
 
 
-def _post(url: str, headers: dict, body: dict, timeout: int = 120) -> dict:
-    for attempt in range(2):
+def _post(url: str, headers: dict, body: dict, timeout: int = 120, attempts: int = 2) -> dict:
+    for attempt in range(attempts):
         r = requests.post(url, headers=headers, json=body, timeout=timeout)
         if r.status_code == 200:
             return r.json()
-        if r.status_code in (429, 500, 502, 503, 504) and attempt == 0:
+        if r.status_code in (429, 500, 502, 503, 504) and attempt + 1 < attempts:
             time.sleep(min(int(r.headers.get("retry-after", 0) or 0) or 15, 60))
             continue
         raise AIError(f"HTTP {r.status_code}: {r.text[:200]}")
@@ -47,10 +56,24 @@ def _post(url: str, headers: dict, body: dict, timeout: int = 120) -> dict:
 
 
 def _gemini(system: str, user: str) -> str:
-    key = os.environ.get("GEMINI_API_KEY")
+    key = _key("GEMINI_API_KEY")
     if not key:
         raise AIError("GEMINI_API_KEY not set")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    last: Exception | None = None
+    for model in GEMINI_MODELS:
+        try:
+            text = _gemini_model(model, key, system, user)
+            if text.strip():
+                return text
+            last = AIError(f"{model} returned empty text")
+        except (AIError, requests.RequestException) as e:
+            print(f"  Gemini {model} failed: {e}")
+            last = e
+    raise AIError(f"all Gemini models failed: {last}")
+
+
+def _gemini_model(model: str, key: str, system: str, user: str) -> str:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     base = {
         "system_instruction": {"parts": [{"text": system}]},
         "contents": [{"role": "user", "parts": [{"text": user}]}],
@@ -62,7 +85,9 @@ def _gemini(system: str, user: str) -> str:
         if thinking:
             gc["thinkingConfig"] = thinking
         try:
-            data = _post(url, {"x-goog-api-key": key}, {**base, "generationConfig": gc})
+            # one short attempt: on 503/hang, move on to the next model
+            data = _post(url, {"x-goog-api-key": key}, {**base, "generationConfig": gc},
+                         timeout=GEMINI_TIMEOUT, attempts=1)
             break
         except AIError as e:
             if "HTTP 400" in str(e) and i < 2:
@@ -73,7 +98,7 @@ def _gemini(system: str, user: str) -> str:
 
 
 def _openrouter(system: str, user: str) -> str:
-    key = os.environ.get("OPENROUTER_API_KEY")
+    key = _key("OPENROUTER_API_KEY")
     if not key:
         raise AIError("OPENROUTER_API_KEY not set")
     if OPENROUTER_MODEL:
@@ -112,7 +137,7 @@ def _tidy(text: str) -> str:
 
 
 def verdict(game: dict, ratings: dict | None) -> str | None:
-    if not (os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")):
+    if not (_key("GEMINI_API_KEY") or _key("OPENROUTER_API_KEY")):
         return None
     payload = {
         "title": game.get("title"),
