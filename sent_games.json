@@ -2312,26 +2312,9 @@
   },
   "3850": {
    "attempts": 1,
-   "expired": false,
+   "expired": true,
    "pending": [],
-   "post": {
-    "description": "Score Knightica for free via Epic Games Store! Knightica is a 2d turn-based roguelike auto-battler where you lead an army of powerful units.\r\n\r\n*Please note this game is also available via Epic Games App (Android and iOS)!",
-    "ends": "2026-11-19 23:59:00",
-    "image": "https://www.gamerpower.com/offers/1b/6af5f33e49913.jpg",
-    "platforms": "PC, Android, iOS, Epic Games Store",
-    "ratings": null,
-    "title": "Knightica (Epic Games) Giveaway",
-    "url": "https://www.gamerpower.com/open/knightica-epic-games-giveaway",
-    "verdict": null,
-    "worth": "$14.99"
-   },
-   "posts": [
-    {
-     "chat": "@freegamesradarhq",
-     "message_id": 393,
-     "mode": "rich"
-    }
-   ]
+   "posts": []
   },
   "3852": {
    "attempts": 1,
@@ -2352,6 +2335,76 @@
     {
      "chat": "@freegamesradarhq",
      "message_id": 394,
+     "mode": "rich"
+    }
+   ]
+  },
+  "3853": {
+   "attempts": 1,
+   "expired": false,
+   "pending": [],
+   "post": {
+    "description": "Score Mark of the Deep for free on Epic Games Store! Mark of the Deep is a pirate-themed adventure game with elements from Metroidvania and Souls-Like games.",
+    "ends": "2026-11-26 23:59:00",
+    "image": "https://www.gamerpower.com/offers/1b/6aff1d0e4942d.jpg",
+    "platforms": "PC, Epic Games Store",
+    "ratings": {
+     "genres": [
+      "Action",
+      "Adventure",
+      "Indie"
+     ],
+     "metacritic": 81,
+     "name": "Mark of the Deep",
+     "released": "Jan 24, 2025",
+     "steam_label": "Very Positive",
+     "steam_pct": 81,
+     "steam_reviews": 248,
+     "url": "https://store.steampowered.com/app/1933370/"
+    },
+    "title": "Mark of the Deep (Epic Games) Giveaway",
+    "url": "https://www.gamerpower.com/open/mark-of-the-deep-epic-games-giveaway",
+    "verdict": "Worth: 8/10 Claim it now\nMark of the Deep is a pirate-themed adventure blending Metroidvania and Souls-like elements. Fans of challenging action and exploration will enjoy this journey. It holds an 81 percent positive rating on Steam and an 81 on Metacritic, making it a great free addition to your library.",
+    "worth": "$19.99"
+   },
+   "posts": [
+    {
+     "chat": "@freegamesradarhq",
+     "message_id": 395,
+     "mode": "rich"
+    }
+   ]
+  },
+  "3854": {
+   "attempts": 1,
+   "expired": false,
+   "pending": [],
+   "post": {
+    "description": "Chants of Sennaar (Mobile version) is free until November 26 on the Epic Games Store App for iPhone, iPad, and Android.\r\n\r\nNote: May not be available in all regions.",
+    "ends": "2026-11-26 23:59:00",
+    "image": "https://www.gamerpower.com/offers/1b/6aff20a09cb65.jpg",
+    "platforms": "Android, iOS",
+    "ratings": {
+     "genres": [
+      "Adventure",
+      "Indie"
+     ],
+     "name": "Lonesome Village",
+     "released": "Nov 1, 2022",
+     "steam_label": "Mostly Positive",
+     "steam_pct": 76,
+     "steam_reviews": 205,
+     "url": "https://store.steampowered.com/app/1418360/"
+    },
+    "title": "Lonesome Village (Mobile) Giveaway",
+    "url": "https://www.gamerpower.com/open/lonesome-village-mobile-giveaway",
+    "verdict": "Worth: 7/10 - Solid puzzle adventure\nThis indie adventure blends cozy exploration with puzzle-solving in a charming village setting. It features a mostly positive Steam rating of 76 percent from over 200 reviews, indicating a generally enjoyable experience for fans of the genre. Since it is currently free on mobile, it is definitely worth your time to check out.",
+    "worth": "$4.99"
+   },
+   "posts": [
+    {
+     "chat": "@freegamesradarhq",
+     "message_id": 396,
      "mode": "rich"
     }
    ]
